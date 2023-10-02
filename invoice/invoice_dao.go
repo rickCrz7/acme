@@ -1,15 +1,17 @@
-package main
+package invoice
 
 import (
 	"database/sql"
 	"log"
+
+	"github.com/rickCrz7/acme/utils"
 )
 
 type InvoiceDao interface {
-	GetInvoices() ([]*Invoice, error)
-	GetInvoiceById(id string) (*Invoice, error)
-	CreateInvoice(invoice *Invoice) error
-	UpdateInvoice(invoice *Invoice) error
+	GetInvoices() ([]*utils.Invoice, error)
+	GetInvoiceById(id string) (*utils.Invoice, error)
+	CreateInvoice(invoice *utils.Invoice) error
+	UpdateInvoice(invoice *utils.Invoice) error
 	DeleteInvoice(id string) error
 }
 
@@ -21,17 +23,17 @@ func NewInvoiceDao(conn *sql.DB) *InvoiceDaoImpl {
 	return &InvoiceDaoImpl{conn: conn}
 }
 
-func (dao *InvoiceDaoImpl) GetInvoices() ([]*Invoice, error) {
+func (dao *InvoiceDaoImpl) GetInvoices() ([]*utils.Invoice, error) {
 	log.Println("Get all invoices")
-	rows, err := dao.conn.Query("SELECT id, customer_id, purchaseDate FROM invoice")
+	rows, err := dao.conn.Query("SELECT id, customer_id, purchaseDate FROM invoice ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	invoices := []*Invoice{}
+	invoices := []*utils.Invoice{}
 	for rows.Next() {
-		invoice := new(Invoice)
+		invoice := new(utils.Invoice)
 		err := rows.Scan(&invoice.ID, &invoice.CustomerID, &invoice.PurchaseDate)
 		if err != nil {
 			return nil, err
@@ -46,10 +48,10 @@ func (dao *InvoiceDaoImpl) GetInvoices() ([]*Invoice, error) {
 
 }
 
-func (dao *InvoiceDaoImpl) GetInvoiceById(id string) (*Invoice, error) {
+func (dao *InvoiceDaoImpl) GetInvoiceById(id string) (*utils.Invoice, error) {
 	log.Println("Get invoice by id")
 	row := dao.conn.QueryRow("SELECT id, customer_id, purchaseDate FROM invoice WHERE id = $1", id)
-	invoice := new(Invoice)
+	invoice := new(utils.Invoice)
 	err := row.Scan(&invoice.ID, &invoice.CustomerID, &invoice.PurchaseDate)
 	if err != nil {
 		return nil, err
@@ -57,7 +59,7 @@ func (dao *InvoiceDaoImpl) GetInvoiceById(id string) (*Invoice, error) {
 	return invoice, nil
 }
 
-func (dao *InvoiceDaoImpl) CreateInvoice(invoice *Invoice) error {
+func (dao *InvoiceDaoImpl) CreateInvoice(invoice *utils.Invoice) error {
 	log.Println("Create invoice")
 	_, err := dao.conn.Exec("INSERT INTO invoice (customer_id, purchaseDate) VALUES ($1, $2)", invoice.CustomerID, invoice.PurchaseDate)
 	if err != nil {
@@ -66,7 +68,7 @@ func (dao *InvoiceDaoImpl) CreateInvoice(invoice *Invoice) error {
 	return nil
 }
 
-func (dao *InvoiceDaoImpl) UpdateInvoice(invoice *Invoice) error {
+func (dao *InvoiceDaoImpl) UpdateInvoice(invoice *utils.Invoice) error {
 	log.Println("Update invoice")
 	_, err := dao.conn.Exec("UPDATE invoice SET customer_id = $1, purchaseDate = $2 WHERE id = $3", invoice.CustomerID, invoice.PurchaseDate, invoice.ID)
 	if err != nil {

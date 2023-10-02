@@ -1,10 +1,11 @@
-package main
+package product
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rickCrz7/acme/utils"
 )
 
 type ProductHandler struct {
@@ -43,7 +44,7 @@ func (h *ProductHandler) getProductById(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *ProductHandler) createProduct(w http.ResponseWriter, r *http.Request) {
-	product := new(Product)
+	product := new(utils.Product)
 	err := json.NewDecoder(r.Body).Decode(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -59,7 +60,7 @@ func (h *ProductHandler) createProduct(w http.ResponseWriter, r *http.Request) {
 
 func (h *ProductHandler) updateProduct(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	product := new(Product)
+	product := new(utils.Product)
 	err := json.NewDecoder(r.Body).Decode(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -7,6 +7,9 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/rickCrz7/acme/customer"
+	"github.com/rickCrz7/acme/invoice"
+	"github.com/rickCrz7/acme/product"
 )
 
 func main() {
@@ -19,10 +22,10 @@ func main() {
 	}
 	defer conn.Close()
 
-	NewCustomerHandler(NewCustomerDao(conn), r)
-	NewProductHandler(NewProductDao(conn), r)
-	NewInvoiceHandler(NewInvoiceDao(conn), r)
-	NewInvoiceItemHandler(NewInvoiceItemDao(conn), r)
+	customer.NewCustomerHandler(customer.NewCustomerDao(conn), r)
+	product.NewProductHandler(product.NewProductDao(conn), r)
+	invoice.NewInvoiceHandler(invoice.NewInvoiceDao(conn), r)
+	invoice.NewInvoiceItemHandler(invoice.NewInvoiceItemDao(conn), r)
 
 	log.Println("Starting server on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

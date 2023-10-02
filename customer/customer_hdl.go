@@ -1,10 +1,11 @@
-package main
+package customer
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rickCrz7/acme/utils"
 )
 
 type CustomerHandler struct {
@@ -43,7 +44,7 @@ func (h *CustomerHandler) getCustomerById(w http.ResponseWriter, r *http.Request
 }
 
 func (h *CustomerHandler) createCustomer(w http.ResponseWriter, r *http.Request) {
-	customer := new(Customer)
+	customer := new(utils.Customer)
 	err := json.NewDecoder(r.Body).Decode(customer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -59,7 +60,7 @@ func (h *CustomerHandler) createCustomer(w http.ResponseWriter, r *http.Request)
 
 func (h *CustomerHandler) updateCustomer(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	customer := new(Customer)
+	customer := new(utils.Customer)
 	err := json.NewDecoder(r.Body).Decode(customer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

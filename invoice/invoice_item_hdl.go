@@ -1,10 +1,11 @@
-package main
+package invoice
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rickCrz7/acme/utils"
 )
 
 type InvoiceItemHandler struct {
@@ -43,7 +44,7 @@ func (h *InvoiceItemHandler) getInvoiceItemById(w http.ResponseWriter, r *http.R
 }
 
 func (h *InvoiceItemHandler) createInvoiceItem(w http.ResponseWriter, r *http.Request) {
-	invoiceItem := new(InvoiceItem)
+	invoiceItem := new(utils.InvoiceItem)
 	err := json.NewDecoder(r.Body).Decode(invoiceItem)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -59,7 +60,7 @@ func (h *InvoiceItemHandler) createInvoiceItem(w http.ResponseWriter, r *http.Re
 
 func (h *InvoiceItemHandler) updateInvoiceItem(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	invoiceItem := new(InvoiceItem)
+	invoiceItem := new(utils.InvoiceItem)
 	err := json.NewDecoder(r.Body).Decode(invoiceItem)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

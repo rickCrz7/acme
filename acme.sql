@@ -44,5 +44,10 @@ INSERT INTO invoice_item (invoice_id, product_id, quantity) VALUES (1, 3, 100);
 INSERT INTO invoice_item (invoice_id, product_id, quantity) VALUES (2, 1, 50);
 INSERT INTO invoice_item (invoice_id, product_id, quantity) VALUES (2, 2, 100);
 
-
-
+SELECT
+c.name, i.id, i.purchaseDate,  p.name, it.quantity, p.price
+FROM customer c
+JOIN invoice i ON c.id = i.customer_id
+JOIN invoice_item it ON i.id = it.invoice_id
+JOIN product p ON it.product_id = p.id
+ORDER BY c.name;

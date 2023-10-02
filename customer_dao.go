@@ -7,10 +7,10 @@ import (
 
 type CustomerDao interface {
 	GetCustomers() ([]*Customer, error)
-	GetCustomerById(id int) (*Customer, error)
+	GetCustomerById(id string) (*Customer, error)
 	CreateCustomer(customer *Customer) error
 	UpdateCustomer(customer *Customer) error
-	DeleteCustomer(id int) error
+	DeleteCustomer(id string) error
 }
 
 type CustomerDaoImpl struct {
@@ -23,7 +23,7 @@ func NewCustomerDao(conn *sql.DB) *CustomerDaoImpl {
 
 func (dao *CustomerDaoImpl) GetCustomers() ([]*Customer, error) {
 	log.Println("Get all customers")
-	rows, err := dao.conn.Query("SELECT id, name FROM customers")
+	rows, err := dao.conn.Query("SELECT id, name FROM customer")
 	if err != nil {
 		return nil, err
 	}
@@ -44,9 +44,9 @@ func (dao *CustomerDaoImpl) GetCustomers() ([]*Customer, error) {
 	return customers, nil
 }
 
-func (dao *CustomerDaoImpl) GetCustomerById(id int) (*Customer, error) {
+func (dao *CustomerDaoImpl) GetCustomerById(id string) (*Customer, error) {
 	log.Println("Get customer by id")
-	row := dao.conn.QueryRow("SELECT id, name FROM customers WHERE id = $1", id)
+	row := dao.conn.QueryRow("SELECT id, name FROM customer WHERE id = $1", id)
 	customer := new(Customer)
 	err := row.Scan(&customer.ID, &customer.Name)
 	if err != nil {
@@ -57,7 +57,7 @@ func (dao *CustomerDaoImpl) GetCustomerById(id int) (*Customer, error) {
 
 func (dao *CustomerDaoImpl) CreateCustomer(customer *Customer) error {
 	log.Println("Create customer")
-	_, err := dao.conn.Exec("INSERT INTO customers (name) VALUES ($1)", customer.Name)
+	_, err := dao.conn.Exec("INSERT INTO customer (name) VALUES ($1)", customer.Name)
 	if err != nil {
 		return err
 	}
@@ -66,16 +66,16 @@ func (dao *CustomerDaoImpl) CreateCustomer(customer *Customer) error {
 
 func (dao *CustomerDaoImpl) UpdateCustomer(customer *Customer) error {
 	log.Println("Update customer")
-	_, err := dao.conn.Exec("UPDATE customers SET name = $1 WHERE id = $2", customer.Name, customer.ID)
+	_, err := dao.conn.Exec("UPDATE customer SET name = $1 WHERE id = $2", customer.Name, customer.ID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (dao *CustomerDaoImpl) DeleteCustomer(id int) error {
+func (dao *CustomerDaoImpl) DeleteCustomer(id string) error {
 	log.Println("Delete customer")
-	_, err := dao.conn.Exec("DELETE FROM customers WHERE id = $1", id)
+	_, err := dao.conn.Exec("DELETE FROM customer WHERE id = $1", id)
 	if err != nil {
 		return err
 	}

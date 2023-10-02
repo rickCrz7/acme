@@ -3,25 +3,25 @@ package main
 import "time"
 
 type Customer struct {
-	ID   int
+	ID   string
 	Name string
 }
 
 type Product struct {
-	ID    int
+	ID    string
 	Name  string
-	Price float64
+	Price string
 }
 
 type Invoice struct {
-	ID       int
-	CustomerID int
+	ID       string
+	CustomerID string
 	PurchaseDate time.Time
 }
 
 type InvoiceItem struct {
-	ID       int
-	InvoiceID int
-	ProductID int
+	ID       string
+	InvoiceID string
+	ProductID string
 	Quantity  int
 }

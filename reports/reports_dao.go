@@ -69,9 +69,18 @@ func (dao *ReportsDaoImpl) TotalSalesByProduct() ([]*utils.TotalSold, error) {
 	return products, nil
 }
 
+// Add Paid status on invoice and price per transaction
 func (dao *ReportsDaoImpl) TotalSalesByCustomers() ([]*utils.CustomerReport, error) {
 	log.Println("Get total sales by customers")
-	rows, err := dao.conn.Query("SELECT c.id, c.name, SUM(it.quantity) AS quantity, SUM(it.quantity * p.price) AS total_sales FROM invoice_item it INNER JOIN invoice i ON it.invoice_id = i.id INNER JOIN customer c ON i.customer_id = c.id INNER JOIN product p ON it.product_id = p.id GROUP BY c.id, c.name ORDER BY total_sales DESC")
+	rows, err := dao.conn.Query(`
+	SELECT c.id, c.name, SUM(it.quantity) AS quantity, SUM(it.quantity * p.price) AS total_sales
+	FROM invoice_item it 
+	INNER JOIN invoice i ON it.invoice_id = i.id 
+	INNER JOIN customer c ON i.customer_id = c.id 
+	INNER JOIN product p ON it.product_id = p.id 
+	GROUP BY c.id, c.name 
+	ORDER BY total_sales DESC
+	`)
 	if err != nil {
 		return nil, err
 	}

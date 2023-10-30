@@ -18,6 +18,7 @@ create table invoice (
     id serial primary key,
     customer_id serial not null references customer(id) on delete cascade,
     purchaseDate date not null
+    status boolean default false
 );
 
 create table invoice_item (
@@ -58,12 +59,12 @@ ORDER BY c.name;
     GROUP BY p.name
     ORDER BY total_sales DESC
     LIMIT 1;
-    -- BEGIN: xj3k4l5m6n7o
+
     SELECT c.name, SUM(it.quantity * p.price) AS total_sales
     FROM customer c
     JOIN invoice i ON c.id = i.customer_id
     JOIN invoice_item it ON i.id = it.invoice_id
     JOIN product p ON it.product_id = p.id
-    GROUP BY c.name
+    GROUP BY c.name 
     ORDER BY total_sales DESC;
-    -- END: xj3k4l5m6n7o
+

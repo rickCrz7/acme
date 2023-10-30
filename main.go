@@ -17,7 +17,7 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	r := mux.NewRouter()
 
-	conn, err := sql.Open("pgx", "postgres://postgres:0241!@localhost:5432/acme?sslmode=disable")
+	conn, err := sql.Open("pgx", "postgres://acme:ACM3!@localhost:5432/acme?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

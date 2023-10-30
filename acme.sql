@@ -51,3 +51,19 @@ JOIN invoice i ON c.id = i.customer_id
 JOIN invoice_item it ON i.id = it.invoice_id
 JOIN product p ON it.product_id = p.id
 ORDER BY c.name;
+
+    SELECT p.name, SUM(it.quantity * p.price) AS total_sales
+    FROM product p
+    JOIN invoice_item it ON p.id = it.product_id
+    GROUP BY p.name
+    ORDER BY total_sales DESC
+    LIMIT 1;
+    -- BEGIN: xj3k4l5m6n7o
+    SELECT c.name, SUM(it.quantity * p.price) AS total_sales
+    FROM customer c
+    JOIN invoice i ON c.id = i.customer_id
+    JOIN invoice_item it ON i.id = it.invoice_id
+    JOIN product p ON it.product_id = p.id
+    GROUP BY c.name
+    ORDER BY total_sales DESC;
+    -- END: xj3k4l5m6n7o

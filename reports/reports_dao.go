@@ -3,12 +3,15 @@ package reports
 import (
 	"database/sql"
 	"log"
+
+	"github.com/rickCrz7/acme/utils"
 )
 
 type ReportsDao interface {
 	MostSoldProducts() ([]*utils.ProductReport, error)
 	TotalSalesByProduct() ([]*utils.TotalSold, error)
 	TotalSalesByCustomers() ([]*utils.CustomerReport, error)
+	TotalSalesByDate(date string) ([]*utils.DateReport, error)
 }
 
 type ReportsDaoImpl struct {
@@ -89,4 +92,28 @@ func (dao *ReportsDaoImpl) TotalSalesByCustomers() ([]*utils.CustomerReport, err
 	}
 
 	return customers, nil
+}
+
+func (dao *ReportsDaoImpl) TotalSalesByDate(date string) ([]*utils.DateReport, error) {
+	log.Println("Get total sales by date")
+	rows, err := dao.conn.Query("SELECT DATE_FORMAT(i.purchase_date, '%Y-%m-%d') AS date, SUM(it.quantity * p.price) AS total_sales FROM invoice_item it INNER JOIN invoice i ON it.invoice_id = i.id INNER JOIN product p ON it.product_id = p.id WHERE DATE_FORMAT(i.purchase_date, '%Y-%m-%d') = ? GROUP BY DATE_FORMAT(i.purchase_date, '%Y-%m-%d')", date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	dates := []*utils.DateReport{}
+	for rows.Next() {
+		date := new(utils.DateReport)
+		err := rows.Scan(&date.Date, &date.TotalSales)
+		if err != nil {
+			return nil, err
+		}
+		dates = append(dates, date)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return dates, nil
 }

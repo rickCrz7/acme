@@ -34,20 +34,27 @@ type Item struct {
 }
 
 type ProductReport struct {
-	ID        string "json: id"
-	Name      string "json: name"
-	Quantity  int    "json: quantity"
+	ID       string "json: id"
+	Name     string "json: name"
+	Price    string "json: price"
+	Quantity int    "json: quantity"
 }
 
 type TotalSold struct {
 	ID        string "json: id"
 	Name      string "json: name"
-	TotalSold string "json: price"	
+	Price     string "json: price"
+	TotalSold string "json: price"
 }
 
 type CustomerReport struct {
 	ID         string "json: id"
 	Name       string "json: name"
 	Quantity   string "json: price"
+	TotalSales string "json: total_sales"
+}
+
+type DateReport struct {
+	Date       string "json: date"
 	TotalSales string "json: total_sales"
 }

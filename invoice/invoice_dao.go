@@ -13,6 +13,7 @@ type InvoiceDao interface {
 	CreateInvoice(invoice *utils.Invoice) error
 	UpdateInvoice(invoice *utils.Invoice) error
 	DeleteInvoice(id string) error
+	MarkAsPaid(id string) error
 }
 
 type InvoiceDaoImpl struct {
@@ -25,7 +26,7 @@ func NewInvoiceDao(conn *sql.DB) *InvoiceDaoImpl {
 
 func (dao *InvoiceDaoImpl) GetInvoices() ([]*utils.Invoice, error) {
 	log.Println("Get all invoices")
-	rows, err := dao.conn.Query("SELECT id, customer_id, purchaseDate FROM invoice ORDER BY id")
+	rows, err := dao.conn.Query("SELECT id, customer_id, purchaseDate, status FROM invoice ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +35,7 @@ func (dao *InvoiceDaoImpl) GetInvoices() ([]*utils.Invoice, error) {
 	invoices := []*utils.Invoice{}
 	for rows.Next() {
 		invoice := new(utils.Invoice)
-		err := rows.Scan(&invoice.ID, &invoice.CustomerID, &invoice.PurchaseDate)
+		err := rows.Scan(&invoice.ID, &invoice.CustomerID, &invoice.PurchaseDate, &invoice.Status)
 		if err != nil {
 			return nil, err
 		}
@@ -50,9 +51,9 @@ func (dao *InvoiceDaoImpl) GetInvoices() ([]*utils.Invoice, error) {
 
 func (dao *InvoiceDaoImpl) GetInvoiceById(id string) (*utils.Invoice, error) {
 	log.Println("Get invoice by id")
-	row := dao.conn.QueryRow("SELECT id, customer_id, purchaseDate FROM invoice WHERE id = $1", id)
+	row := dao.conn.QueryRow("SELECT id, customer_id, purchaseDate, status FROM invoice WHERE id = $1", id)
 	invoice := new(utils.Invoice)
-	err := row.Scan(&invoice.ID, &invoice.CustomerID, &invoice.PurchaseDate)
+	err := row.Scan(&invoice.ID, &invoice.CustomerID, &invoice.PurchaseDate, &invoice.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -80,6 +81,15 @@ func (dao *InvoiceDaoImpl) UpdateInvoice(invoice *utils.Invoice) error {
 func (dao *InvoiceDaoImpl) DeleteInvoice(id string) error {
 	log.Println("Delete invoice")
 	_, err := dao.conn.Exec("DELETE FROM invoice WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (dao *InvoiceDaoImpl) MarkAsPaid(id string) error {
+	log.Println("Mark invoice as paid")
+	_, err := dao.conn.Exec("UPDATE invoice SET status = true WHERE id = $1", id)
 	if err != nil {
 		return err
 	}

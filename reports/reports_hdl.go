@@ -16,6 +16,7 @@ func NewReportsHandler(dao ReportsDao, r *mux.Router) *ReportsHandler {
 	r.HandleFunc("/api/v1/reports/most-sold-products", h.getMostSoldProducts).Methods("GET")
 	r.HandleFunc("/api/v1/reports/total-sales-by-product", h.getTotalSalesByProduct).Methods("GET")
 	r.HandleFunc("/api/v1/reports/total-sales-by-customers", h.getTotalSalesByCustomers).Methods("GET")
+	r.HandleFunc("/api/v1/reports/reports-by-status", h.getReportsByStatus).Methods("GET")
 	return h
 }
 
@@ -47,4 +48,14 @@ func (h *ReportsHandler) getTotalSalesByCustomers(w http.ResponseWriter, r *http
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(customers)
+}
+
+func (h *ReportsHandler) getReportsByStatus(w http.ResponseWriter, r *http.Request) {
+	status, err := h.dao.ReportsByStatus()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(status)
 }

@@ -18,6 +18,7 @@ func NewInvoiceHandler(invoiceDao InvoiceDao, r *mux.Router) *InvoiceHandler {
 	r.HandleFunc("/api/v1/invoices/{id}", h.getInvoiceById).Methods("GET")
 	r.HandleFunc("/api/v1/invoices", h.createInvoice).Methods("POST")
 	r.HandleFunc("/api/v1/invoices/{id}", h.updateInvoice).Methods("PUT")
+	r.HandleFunc("/api/v1/invoices/paid/{id}", h.MarkAsPaid).Methods("PUT")
 	r.HandleFunc("/api/v1/invoices/{id}", h.deleteInvoice).Methods("DELETE")
 	return h
 }
@@ -68,6 +69,16 @@ func (h *InvoiceHandler) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	invoice.ID = id
 	err = h.invoiceDao.UpdateInvoice(invoice)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *InvoiceHandler) MarkAsPaid(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	err := h.invoiceDao.MarkAsPaid(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

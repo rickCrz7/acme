@@ -17,7 +17,7 @@ create table product (
 create table invoice (
     id serial primary key,
     customer_id serial not null references customer(id) on delete cascade,
-    purchaseDate date not null
+    purchaseDate date not null,
     status boolean default false
 );
 
@@ -25,8 +25,11 @@ create table invoice_item (
     id serial primary key,
     invoice_id serial not null references invoice(id) on delete cascade,
     product_id serial not null references product(id) on delete cascade,
-    quantity integer not null
+    quantity integer not null,
+    price money not null
 );
+
+
 
 INSERT INTO customer (name) VALUES ('Acme Corp');
 INSERT INTO customer (name) VALUES ('SWAU EDU');
@@ -35,36 +38,37 @@ INSERT INTO product (name, price) VALUES ('Computers', 499.99);
 INSERT INTO product (name, price) VALUES ('Monitors', 149.99);
 INSERT INTO product (name, price) VALUES ('Keyboards', 49.99);
 
-INSERT INTO invoice (customer_id, purchaseDate) VALUES (1, '2023-01-01');
+INSERT INTO invoice (customer_id, purchaseDate) VALUES (1, '2023-01-01', true);
 INSERT INTO invoice (customer_id, purchaseDate) VALUES (2, '2023-03-02');
 
-INSERT INTO invoice_item (invoice_id, product_id, quantity) VALUES (1, 1, 100);
-INSERT INTO invoice_item (invoice_id, product_id, quantity) VALUES (1, 2, 150);
-INSERT INTO invoice_item (invoice_id, product_id, quantity) VALUES (1, 3, 100);
 
-INSERT INTO invoice_item (invoice_id, product_id, quantity) VALUES (2, 1, 50);
-INSERT INTO invoice_item (invoice_id, product_id, quantity) VALUES (2, 2, 100);
+INSERT INTO invoice_item (invoice_id, product_id, quantity, price) VALUES (1, 1, 100, 499.99);
+INSERT INTO invoice_item (invoice_id, product_id, quantity, price) VALUES (1, 2, 150, 149.99);
+INSERT INTO invoice_item (invoice_id, product_id, quantity, price) VALUES (1, 3, 100, 49.99);
+
+INSERT INTO invoice_item (invoice_id, product_id, quantity, price) VALUES (2, 1, 50, 499.99);
+INSERT INTO invoice_item (invoice_id, product_id, quantity, price) VALUES (2, 2, 100, 149.99);
 
 SELECT
-c.name, i.id, i.purchaseDate,  p.name, it.quantity, p.price
+c.name, i.id, i.purchaseDate,  p.name, it.quantity, it.price
 FROM customer c
 JOIN invoice i ON c.id = i.customer_id
 JOIN invoice_item it ON i.id = it.invoice_id
 JOIN product p ON it.product_id = p.id
 ORDER BY c.name;
 
-    SELECT p.name, SUM(it.quantity * p.price) AS total_sales
-    FROM product p
-    JOIN invoice_item it ON p.id = it.product_id
-    GROUP BY p.name
-    ORDER BY total_sales DESC
-    LIMIT 1;
+SELECT p.name, SUM(it.quantity * it.price) AS total_sales
+FROM product p
+JOIN invoice_item it ON p.id = it.product_id
+GROUP BY p.name
+ORDER BY total_sales DESC
+LIMIT 1;
 
-    SELECT c.name, SUM(it.quantity * p.price) AS total_sales
-    FROM customer c
-    JOIN invoice i ON c.id = i.customer_id
-    JOIN invoice_item it ON i.id = it.invoice_id
-    JOIN product p ON it.product_id = p.id
-    GROUP BY c.name 
-    ORDER BY total_sales DESC;
+SELECT c.name, SUM(it.quantity * it.price) AS total_sales
+FROM customer c
+JOIN invoice i ON c.id = i.customer_id
+JOIN invoice_item it ON i.id = it.invoice_id
+JOIN product p ON it.product_id = p.id
+GROUP BY c.name 
+ORDER BY total_sales DESC;
 

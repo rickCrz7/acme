@@ -18,6 +18,7 @@ type Invoice struct {
 	CustomerID   string    `json:"customer_id"`
 	PurchaseDate time.Time `json:"purchase_date"`
 	Items        []Item    `json:"items"`
+	Status       string    `json:"status"`
 }
 
 type InvoiceItem struct {
@@ -25,6 +26,7 @@ type InvoiceItem struct {
 	InvoiceID string `json:"invoice_id"`
 	ProductID string `json:"product_id"`
 	Quantity  int    `json:"quantity"`
+	Price     string `json:"price"`
 }
 
 type Item struct {
@@ -50,6 +52,12 @@ type TotalSold struct {
 type CustomerReport struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
+	Quantity   int    `json:"price"`
+	TotalSales string `json:"total_sales"`
+}
+
+type StatusReport struct {
+	Status     bool   `json:"status"`
 	Quantity   int    `json:"price"`
 	TotalSales string `json:"total_sales"`
 }

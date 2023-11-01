@@ -11,6 +11,7 @@ type ReportsDao interface {
 	MostSoldProducts() ([]*utils.ProductReport, error)
 	TotalSalesByProduct() ([]*utils.TotalSold, error)
 	TotalSalesByCustomers() ([]*utils.CustomerReport, error)
+	ReportsByStatus() ([]*utils.StatusReport, error)
 }
 
 type ReportsDaoImpl struct {
@@ -23,7 +24,10 @@ func NewReportsDao(conn *sql.DB) *ReportsDaoImpl {
 
 func (dao *ReportsDaoImpl) MostSoldProducts() ([]*utils.ProductReport, error) {
 	log.Println("Get most sold products")
-	rows, err := dao.conn.Query("SELECT p.id, p.name, p.price, SUM(it.quantity) AS quantity FROM invoice_item it INNER JOIN product p ON it.product_id = p.id GROUP BY p.id, p.name, p.price ORDER BY quantity DESC")
+	rows, err := dao.conn.Query(`SELECT p.id, p.name, p.price, SUM(it.quantity) AS quantity 
+	FROM invoice_item it INNER JOIN product p ON it.product_id = p.id 
+	GROUP BY p.id, p.name, p.price 
+	ORDER BY quantity DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +51,11 @@ func (dao *ReportsDaoImpl) MostSoldProducts() ([]*utils.ProductReport, error) {
 
 func (dao *ReportsDaoImpl) TotalSalesByProduct() ([]*utils.TotalSold, error) {
 	log.Println("Get total sales by product")
-	rows, err := dao.conn.Query("SELECT p.id, p.name, p.price, SUM(it.quantity * p.price) AS total_sold FROM invoice_item it INNER JOIN product p ON it.product_id = p.id GROUP BY p.id, p.name, p.price ORDER BY total_sold DESC")
+	rows, err := dao.conn.Query(`SELECT p.id, p.name, p.price, SUM(it.quantity * it.price) AS total_sold 
+	FROM invoice_item it 
+	INNER JOIN product p ON it.product_id = p.id 
+	GROUP BY p.id, p.name, p.price 
+	ORDER BY total_sold DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -73,11 +81,12 @@ func (dao *ReportsDaoImpl) TotalSalesByProduct() ([]*utils.TotalSold, error) {
 func (dao *ReportsDaoImpl) TotalSalesByCustomers() ([]*utils.CustomerReport, error) {
 	log.Println("Get total sales by customers")
 	rows, err := dao.conn.Query(`
-	SELECT c.id, c.name, SUM(it.quantity) AS quantity, SUM(it.quantity * p.price) AS total_sales
+	SELECT c.id, c.name, SUM(it.quantity) AS quantity, SUM(it.quantity * it.price) AS total_sales
 	FROM invoice_item it 
 	INNER JOIN invoice i ON it.invoice_id = i.id 
 	INNER JOIN customer c ON i.customer_id = c.id 
-	INNER JOIN product p ON it.product_id = p.id 
+	INNER JOIN product p ON it.product_id = p.id
+	where i.paid = true 
 	GROUP BY c.id, c.name 
 	ORDER BY total_sales DESC
 	`)
@@ -100,4 +109,35 @@ func (dao *ReportsDaoImpl) TotalSalesByCustomers() ([]*utils.CustomerReport, err
 	}
 
 	return customers, nil
+}
+
+func (dao *ReportsDaoImpl) ReportsByStatus() ([]*utils.StatusReport, error) {
+	log.Println("Get reports by status")
+	rows, err := dao.conn.Query(`
+	SELECT i.status, SUM(it.quantity), SUM(it.quantity * it.price) AS total_sales
+	FROM invoice i
+	INNER JOIN invoice_item it ON i.id = it.invoice_id
+	GROUP BY i.status
+	ORDER BY i.status desc
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	status := []*utils.StatusReport{}
+	for rows.Next() {
+		stat := new(utils.StatusReport)
+		err := rows.Scan(&stat.Status, &stat.Quantity, &stat.TotalSales)
+		if err != nil {
+			return nil, err
+		}
+		status = append(status, stat)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return status, nil
+
 }

@@ -26,6 +26,7 @@ func (dao *ReportsDaoImpl) MostSoldProducts() ([]*utils.ProductReport, error) {
 	log.Println("Get most sold products")
 	rows, err := dao.conn.Query(`SELECT p.id, p.name, p.price, SUM(it.quantity) AS quantity 
 	FROM invoice_item it INNER JOIN product p ON it.product_id = p.id 
+	where it.invoice_id in (select id from invoice where status = true)
 	GROUP BY p.id, p.name, p.price 
 	ORDER BY quantity DESC`)
 	if err != nil {
@@ -54,6 +55,7 @@ func (dao *ReportsDaoImpl) TotalSalesByProduct() ([]*utils.TotalSold, error) {
 	rows, err := dao.conn.Query(`SELECT p.id, p.name, p.price, SUM(it.quantity * it.price) AS total_sold 
 	FROM invoice_item it 
 	INNER JOIN product p ON it.product_id = p.id 
+	where it.invoice_id in (select id from invoice where status = true)
 	GROUP BY p.id, p.name, p.price 
 	ORDER BY total_sold DESC`)
 	if err != nil {
@@ -81,14 +83,13 @@ func (dao *ReportsDaoImpl) TotalSalesByProduct() ([]*utils.TotalSold, error) {
 func (dao *ReportsDaoImpl) TotalSalesByCustomers() ([]*utils.CustomerReport, error) {
 	log.Println("Get total sales by customers")
 	rows, err := dao.conn.Query(`
-	SELECT c.id, c.name, SUM(it.quantity) AS quantity, SUM(it.quantity * it.price) AS total_sales
+	SELECT c.id, c.name, i.status, SUM(it.quantity) AS quantity, SUM(it.quantity * it.price) AS total_sales
 	FROM invoice_item it 
 	INNER JOIN invoice i ON it.invoice_id = i.id 
 	INNER JOIN customer c ON i.customer_id = c.id 
 	INNER JOIN product p ON it.product_id = p.id
-	where i.paid = true 
-	GROUP BY c.id, c.name 
-	ORDER BY total_sales DESC
+	GROUP BY c.id, c.name, i.status 
+	ORDER BY i.status DESC
 	`)
 	if err != nil {
 		return nil, err
@@ -98,7 +99,7 @@ func (dao *ReportsDaoImpl) TotalSalesByCustomers() ([]*utils.CustomerReport, err
 	customers := []*utils.CustomerReport{}
 	for rows.Next() {
 		customer := new(utils.CustomerReport)
-		err := rows.Scan(&customer.ID, &customer.Name, &customer.Quantity, &customer.TotalSales)
+		err := rows.Scan(&customer.ID, &customer.Name, &customer.Status , &customer.Quantity, &customer.TotalSales)
 		if err != nil {
 			return nil, err
 		}

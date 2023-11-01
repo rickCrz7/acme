@@ -52,12 +52,13 @@ type TotalSold struct {
 type CustomerReport struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
-	Quantity   int    `json:"price"`
+	Status     bool `json:"status"`
+	Quantity   int    `json:"quantity"`
 	TotalSales string `json:"total_sales"`
 }
 
 type StatusReport struct {
 	Status     bool   `json:"status"`
-	Quantity   int    `json:"price"`
+	Quantity   int    `json:"quantity"`
 	TotalSales string `json:"total_sales"`
 }
